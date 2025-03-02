@@ -8,12 +8,10 @@ environment:
   sdk: ^3.6.1
 
 dependencies:
-  flutter:
-    sdk: flutter
   shelf: ^1.4.0
   shelf_router: ^1.1.0
   better_bus_core: any
-  sqlite3: ^2.7.4
+
 
 dev_dependencies:
   http: ^1.1.0

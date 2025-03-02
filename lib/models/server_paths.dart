@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:core/core.dart';
+import 'package:better_bus_core/core.dart';
 
 class ServerPaths extends GTFSPaths {
   ServerPaths({Directory? root}) : super.broken(){

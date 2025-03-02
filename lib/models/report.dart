@@ -1,4 +1,4 @@
-import 'package:core/core.dart';
+import 'package:better_bus_core/core.dart';
 class Report {
   final Station station;
   late final DateTime time;
