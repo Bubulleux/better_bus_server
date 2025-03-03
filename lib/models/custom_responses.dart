@@ -14,6 +14,6 @@ class CustomResponses extends Response {
           headers: {"content-type": "application/json"},
         );
 
-  CustomResponses.reports(List<Report> reports)
+  CustomResponses.reports(List<ServerReport> reports)
     : this.json(reports.map((e) => e.toJson()).toList());
 }

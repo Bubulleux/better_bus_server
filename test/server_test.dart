@@ -1,11 +1,13 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:http/http.dart';
 import 'package:test/test.dart';
+import 'package:better_bus_core/core.dart';
 
 void main() {
   final port = '8080';
-  final host = 'http://0.0.0.0:$port';
+  final host = 'http://localhost:$port';
   late Process p;
 
   setUp(() async {
@@ -36,4 +38,29 @@ void main() {
     final response = await get(Uri.parse('$host/foobar'));
     expect(response.statusCode, 404);
   });
+
+  test('radar', () async {
+    // TODO : Maybe use a better provider
+    final provider = ApiProvider.vitalis();
+    final radar = RadarClient(apiUrl: Uri.parse(host), provider: provider);
+    // TODO: Vitalis Only
+    final nd = (await provider.getStations()).firstWhere((e) => e.name.startsWith("Notre"));
+
+    var reports = await radar.getReports();
+    expect(reports, isEmpty);
+
+     final sendSuccess = await radar.sendReport(nd);
+     expect(sendSuccess, isTrue);
+     reports = await radar.getReports();
+     expect(reports, isNotEmpty);
+
+
+  });
 }
+
+
+
+
+
+
+

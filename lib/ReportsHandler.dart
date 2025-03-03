@@ -4,7 +4,7 @@ import 'models/report.dart';
 
 class ReportsHandler {
   GTFSProvider provider;
-  Map<int, Report> reports = {};
+  Map<int, ServerReport> reports = {};
   Map<int, Station> stationsMap = {};
 
   ReportsHandler(this.provider);
@@ -21,10 +21,10 @@ class ReportsHandler {
   Future<bool> sendReport(int stationId) async {
     if (!stationsMap.containsKey(stationId)) return false;
 
-    return _addReport(Report(stationsMap[stationId]!));
+    return _addReport(ServerReport(stationsMap[stationId]!));
   }
 
-  Future<bool> _addReport(Report report) async {
+  Future<bool> _addReport(ServerReport report) async {
     reports[report.id] = report;
     return Future.value(true);
   }
@@ -36,7 +36,7 @@ class ReportsHandler {
     return Future.value(true);
   }
 
-  Future<List<Report>> getReports() async {
+  Future<List<ServerReport>> getReports() async {
     return Future.value(reports.values.toList());
   }
 

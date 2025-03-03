@@ -1,16 +1,10 @@
 import 'package:better_bus_core/core.dart';
-class Report {
-  final Station station;
-  late final DateTime time;
-  late final int id;
 
-  // key: updateTime, value: stillThere
-  final Map<DateTime, bool> updates = {};
+class ServerReport extends Report {
+  DateTime creationDate = DateTime.now();
 
-  Report(this.station) {
-    time = DateTime.now();
-    id = hashCode;
-    updates[time] = true;
+  ServerReport(station) : super(station, station.hashCode){
+    updates[DateTime.now()] = true;
   }
 
   void update(bool sillThere) {
@@ -18,7 +12,7 @@ class Report {
   }
 
   @override
-  int get hashCode => time.hashCode ^ station.hashCode;
+  int get hashCode => station.hashCode;
 
   Map<String, dynamic> toJson() => {
     "id": id,
