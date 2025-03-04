@@ -7,7 +7,7 @@ import 'report.dart';
 class CustomResponses extends Response {
   CustomResponses(super.statusCode);
 
-  CustomResponses.json(Iterable body)
+  CustomResponses.json(Object body)
       : assert(body is Map || body is List),
         super.ok(
           jsonEncode(body),

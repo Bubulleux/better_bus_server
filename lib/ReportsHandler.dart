@@ -1,4 +1,5 @@
 import 'package:better_bus_core/core.dart';
+import 'package:server/models/custom_responses.dart';
 
 import 'models/report.dart';
 
@@ -18,10 +19,12 @@ class ReportsHandler {
     return true;
   }
 
-  Future<bool> sendReport(int stationId) async {
-    if (!stationsMap.containsKey(stationId)) return false;
+  Future<ServerReport?> sendReport(int stationId) async {
+    if (!stationsMap.containsKey(stationId)) return null;
 
-    return _addReport(ServerReport(stationsMap[stationId]!));
+    final report = ServerReport(stationsMap[stationId]!);
+     _addReport(report);
+     return report;
   }
 
   Future<bool> _addReport(ServerReport report) async {

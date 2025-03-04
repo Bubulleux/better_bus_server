@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:server/ReportsHandler.dart';
 import 'package:server/models/custom_responses.dart';
+import 'package:server/models/report.dart';
 import 'package:server/models/server_paths.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
@@ -58,11 +59,11 @@ Future<Response> _sendReport(Request request) async {
   if (stationId == null) {
     return Response.badRequest(body: "Missing stationId");
   }
-  final success = await reports.sendReport(int.parse(stationId));
-  if (!success) {
+  ServerReport? report = await reports.sendReport(int.parse(stationId));
+  if (report == null) {
     return Response.badRequest(body: "Station does not existe");
   }
-  return Response.ok("Report sent");
+  return CustomResponses.json(report.toJson());
 }
 
 Future<bool> initProvider() async {
