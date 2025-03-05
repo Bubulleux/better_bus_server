@@ -49,12 +49,17 @@ void main() {
     var reports = await radar.getReports();
     expect(reports, isEmpty);
 
-     final sendSuccess = await radar.sendReport(nd);
-     expect(sendSuccess, isTrue);
+     var report = await radar.sendReport(nd);
+     expect(report, isNotNull);
      reports = await radar.getReports();
      expect(reports, isNotEmpty);
 
+     report = await radar.updateReport(reports.first, true);
+     expect(report, isNotNull);
 
+    report = await radar.updateReport(reports.first, false);
+    expect(report, isNotNull);
+    expect(report!.updates.length, greaterThan(1));
   });
 }
 

@@ -32,11 +32,11 @@ class ReportsHandler {
     return Future.value(true);
   }
 
-  Future<bool> reportUpdate(int reportId, bool stillThere) {
-    if (!reports.containsKey(reportId)) return Future.value(false);
+  Future<ServerReport?> reportUpdate(int reportId, bool stillThere) {
+    if (!reports.containsKey(reportId)) return Future.value(null);
     final report = reports[reportId];
     report!.update(stillThere);
-    return Future.value(true);
+    return Future.value(report);
   }
 
   Future<List<ServerReport>> getReports() async {

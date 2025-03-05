@@ -10,7 +10,6 @@ import 'package:shelf/shelf_io.dart';
 
 import 'package:shelf_router/shelf_router.dart';
 import 'package:better_bus_core/core.dart';
-import '../lib/lib.dart';
 
 final provider = GTFSProvider.vitalis(ServerPaths());
 final reports = ReportsHandler(provider);
@@ -23,7 +22,9 @@ final _router = Router()
   ..get('/sendReport/<stationId>', _sendReport)
   ..get('/lines.txt', _getLines)
   ..get('/stations', _getStation)
-  ..get('/reports', _getReports);
+  ..get('/reports', _getReports)
+..get('/update/<reportId>/<stillThere>', _updateReport)
+;
 
 Response _rootHandler(Request req) {
   return Response.ok('Hello, World!\n');
@@ -63,6 +64,17 @@ Future<Response> _sendReport(Request request) async {
   if (report == null) {
     return Response.badRequest(body: "Station does not existe");
   }
+  return CustomResponses.json(report.toJson());
+}
+
+Future<Response> _updateReport(Request req) async {
+  int? reportId = int.tryParse(req.params["reportId"]!);
+  bool? stillThere =  {"1": true, "0": false}[req.params["stillThere"]];
+  if (reportId == null || stillThere == null) {
+    return Response.badRequest(body: "Invalid request");
+  }
+  ServerReport? report = await reports.reportUpdate(reportId, stillThere);
+  if (report == null) return Response.badRequest(body: "Report not found");
   return CustomResponses.json(report.toJson());
 }
 
