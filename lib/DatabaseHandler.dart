@@ -16,13 +16,24 @@ class DBHandler {
           port: 5432,
           database: 'better-bus',
           username: 'localuser',
-          password: 'easypassword',
+          password: 'password',
         ));
 
   Future<Connection?> connect() async {
     _conn = await Connection.open(endpoint);
     print("Data base connection success");
     return conn;
+  }
+
+  Future<int> createReport(Station station) async {
+    final result = await conn.execute(
+        'INSERT INTO public.reports("stationId")'
+          r'VALUES ($1) RETURNING id',
+      parameters: [station.id]
+    );
+    int id = result.first.first as int;
+    print("Report generated with id $id");
+    return id;
   }
 
   Future<bool> sendReport(Report report) async {

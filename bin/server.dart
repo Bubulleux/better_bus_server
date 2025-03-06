@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:server/DatabaseHandler.dart';
 import 'package:server/ReportsHandler.dart';
 import 'package:server/models/custom_responses.dart';
 import 'package:server/models/report.dart';
 import 'package:server/models/server_paths.dart';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 
@@ -12,7 +14,8 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:better_bus_core/core.dart';
 
 final provider = GTFSProvider.vitalis(ServerPaths());
-final reports = ReportsHandler(provider);
+final db = DBHandler.localhost();
+final reports = ReportsHandler(provider, db);
 
 // Configure routes.
 final _router = Router()
@@ -90,9 +93,12 @@ Future<bool> initProvider() async {
 Future<Response> _getReports(Request req) async {
   return CustomResponses.reports(await reports.getReports());
 }
-
 void main(List<String> args) async {
+  await asyncMain(args);
+}
+Future asyncMain(List<String> args) async {
   await initProvider();
+
   // Use any available host or container IP (usually `0.0.0.0`).
   final ip = InternetAddress.anyIPv4;
 
@@ -105,3 +111,4 @@ void main(List<String> args) async {
   final server = await serve(handler, ip, port);
   print('Server listening on port ${server.port}');
 }
+

@@ -7,7 +7,7 @@ import 'package:postgres/postgres.dart';
 class ServerReport extends Report {
   DateTime creationDate = DateTime.now();
 
-  ServerReport(station) : super(station, station.hashCode){
+  ServerReport(super.station, super.id) {
     updates[DateTime.now()] = true;
   }
 
@@ -26,7 +26,8 @@ class ServerReport extends Report {
 
   factory ServerReport.fromDbRaw(Map<String, dynamic> row, Map<int, Station> stations)  {
     Station station = stations[row["stationId"]]!;
-    final report =  ServerReport(station);
+    final id = row["id"];
+    final report =  ServerReport(station, id);
     report.updates.clear();
     report.addUpdate(row);
     return report;

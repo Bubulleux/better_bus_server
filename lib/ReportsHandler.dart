@@ -1,4 +1,6 @@
 import 'package:better_bus_core/core.dart';
+import 'package:postgres/postgres.dart';
+import 'package:server/DatabaseHandler.dart';
 import 'package:server/models/custom_responses.dart';
 
 import 'models/report.dart';
@@ -7,11 +9,15 @@ class ReportsHandler {
   GTFSProvider provider;
   Map<int, ServerReport> reports = {};
   Map<int, Station> stationsMap = {};
+  Set<int> notSavedReport = {};
+  final DBHandler? db;
 
-  ReportsHandler(this.provider);
+  ReportsHandler(this.provider, this.db);
 
   Future<bool> init() async {
-    final success = await provider.init();
+    var success = await provider.init();
+    success &= db == null || await db?.connect() != null;
+    if (db == null) print("WARNING: No Database provider !!");
 
     if (!success) return Future.value(false);
     stationsMap.addEntries(
@@ -21,15 +27,21 @@ class ReportsHandler {
 
   Future<ServerReport?> sendReport(int stationId) async {
     if (!stationsMap.containsKey(stationId)) return null;
+    final station = stationsMap[stationId]!;
 
-    final report = ServerReport(stationsMap[stationId]!);
-     _addReport(report);
+    final report = await _createReport(station);
      return report;
   }
 
-  Future<bool> _addReport(ServerReport report) async {
-    reports[report.id] = report;
-    return Future.value(true);
+  Future<ServerReport?> _createReport(Station station) async {
+    int? id = await db?.createReport(station);
+    if (id == null) {
+      id ??= reports.length.hashCode ^ DateTime.now().hashCode;
+      print("Database not found, report created but not saved with id $id");
+      notSavedReport.add(id);
+    }
+    reports[id] = ServerReport(station, id);
+    return reports[id];
   }
 
   Future<ServerReport?> reportUpdate(int reportId, bool stillThere) {
