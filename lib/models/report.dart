@@ -7,9 +7,13 @@ import 'package:postgres/postgres.dart';
 class ServerReport extends Report {
   DateTime creationDate = DateTime.now();
 
-  ServerReport(super.station, super.id) {
-    updates[DateTime.now()] = true;
+  // TODO: Make it better
+  bool get keep => updates.containsValue(true);
+
+  ServerReport(super.station, super.id, DateTime firstUpdate) {
+    updates[firstUpdate] = true;
   }
+  ServerReport.empty(super.station, super.id);
 
   void update(bool sillThere) {
     updates[DateTime.now()] = sillThere;
@@ -24,24 +28,23 @@ class ServerReport extends Report {
     "updates": updates.map((key, value) => MapEntry(key.millisecondsSinceEpoch.toString(), value)),
   };
 
+  void addUpdate(DateTime time, bool stillThere) {
+    updates[time] = stillThere;
+  }
+
   factory ServerReport.fromDbRaw(Map<String, dynamic> row, Map<int, Station> stations)  {
-    Station station = stations[row["stationId"]]!;
-    final id = row["id"];
-    final report =  ServerReport(station, id);
-    report.updates.clear();
-    report.addUpdate(row);
+    Station station = stations[row["station_id"]]!;
+    final id = row["report_id"];
+    final report =  ServerReport.empty(station, id);
+    report.loadUpdate(row);
     return report;
   }
 
-  void addUpdate(Map<String, dynamic> row) {
-    UndecodedBytes bytes = row["updatetime"];
-    bytes.typeOid;
+  void loadUpdate(Map<String, dynamic> row) {
+    final timeEpoch = double.parse(row["time_epoch"] as String).toInt();
+    final time = DateTime.fromMillisecondsSinceEpoch(timeEpoch * 1000);
+    final stillThere = row["still_there"];
 
-    int timestamp = bytes.bytes.buffer.asInt64List().first;
-    print(timestamp);
-    print(DateTime.fromMicrosecondsSinceEpoch(timestamp));
-
-    print(Time.fromMicroseconds(bytes.typeOid));
-    updates[row["updatetime"]!] = row["stillThere"];
+    updates[time] = stillThere;
   }
 }

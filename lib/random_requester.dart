@@ -39,6 +39,10 @@ class RandomRequester {
       final update = i < updateCount
           ? Future.delayed(wait + updateDelay).then((_) async {
               final reports = await client.getReports();
+              if (reports.isEmpty) {
+                print("Report can't update");
+                return;
+              }
               Report report = reports[Random.secure().nextInt(reports.length)];
               await client.updateReport(report, Random.secure().nextDouble() > 0.5);
               print("Report update ${report.id}");

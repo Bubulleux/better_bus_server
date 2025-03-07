@@ -63,6 +63,7 @@ Future<Response> _sendReport(Request request) async {
   if (stationId == null) {
     return Response.badRequest(body: "Missing stationId");
   }
+  print("Send report on $stationId");
   ServerReport? report = await reports.sendReport(int.parse(stationId));
   if (report == null) {
     return Response.badRequest(body: "Station does not existe");

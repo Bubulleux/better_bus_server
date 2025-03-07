@@ -27,49 +27,59 @@ class DBHandler {
 
   Future<int> createReport(Station station) async {
     final result = await conn.execute(
-        'INSERT INTO public.reports("stationId")'
-          r'VALUES ($1) RETURNING id',
-      parameters: [station.id]
-    );
+        'INSERT INTO public.reports("station_id")'
+        r'VALUES ($1) RETURNING id',
+        parameters: [station.id.toString()]);
     int id = result.first.first as int;
     print("Report generated with id $id");
     return id;
   }
 
-  Future<bool> sendReport(Report report) async {
-    await conn.execute(
-        'INSERT INTO public.reports("reportId", "stationId")'
-        r'VALUES ($1, $2);',
-        parameters: [report.id, report.station.id]);
-
-    return await updateReport(report, report.updates.entries.last);
-  }
-
-  Future<bool> updateReport(Report report, MapEntry<DateTime, bool> update) async {
-    print(update.key);
-    await conn.execute(
-        'INSERT INTO public.report_updates("reportId", "stationId", "updatetime", "stillThere")'
-        r'VALUES ($1, $2,$3, $4);',
-        parameters: [report.id, report.station.id, update.key.toString(), update.value.toString().toUpperCase()]
-    );
-    return true;
-  }
-  
-  Future<Map<int, ServerReport>> loadReports(Map<int, Station> stations) async {
+  Future<DateTime?> updateReport(int reportId, bool stillThere) async {
     final result = await conn.execute(
-        Sql('SELECT * FROM public.report_updates')
+        'INSERT INTO public.report_updates(report_id, "still_there", "time")'
+        r'VALUES ($1, $2, NOW())'
+        'RETURNING EXTRACT (EPOCH FROM time) * 1000;',
+        parameters: [reportId, stillThere.toString()]);
+    final timeEpoch = double.parse(result.first.first as String).toInt();
+    return DateTime.fromMillisecondsSinceEpoch(timeEpoch);
+  }
+
+  Future<Map<int, ServerReport>> loadReports(Map<int, Station> stations,
+      {Duration? startFrom = const Duration(hours: 1)}) async {
+    final startDate = startFrom != null
+        ? DateTime.now().subtract(startFrom!)
+        : DateTime.fromMillisecondsSinceEpoch(0);
+    final result = await conn.execute(
+      'SELECT report_id, station_id, still_there, '
+      r'EXTRACT (EPOCH FROM time) AS time_epoch '
+      'FROM public.report_updates '
+      'LEFT JOIN public.reports '
+      'ON report_updates.report_id = public.reports.id '
+      'WHERE alive = true '
+      r"AND EXTRACT (EPOCH FROM time) > $1 "
+      r'ORDER BY time; ',
+      parameters: [startDate.millisecondsSinceEpoch / 1000],
     );
+
+
     print(result.schema);
     Map<int, ServerReport> reports = {};
     for (var row in result) {
       final map = row.toColumnMap();
-      final int id = map["reportId"]!;
+      final int id = map["report_id"]!;
       if (reports.containsKey(id)) {
-        reports[id]!.addUpdate(map);
+        reports[id]!.loadUpdate(map);
       } else {
         reports[id] = ServerReport.fromDbRaw(map, stations);
       }
     }
+    print("Loaded ${reports.length} reports");
+    print("${result.length} Updated found");
     return reports;
+  }
+
+  String formatDate(DateTime date) {
+    return date.toUtc().toIso8601String();
   }
 }

@@ -22,6 +22,10 @@ class ReportsHandler {
     if (!success) return Future.value(false);
     stationsMap.addEntries(
         (await provider.getStations()).map((e) => MapEntry(e.id, e)));
+
+    reports = await db!.loadReports(stationsMap);
+    final cleaned = cleanReport(null);
+    print("${cleaned.length} Report cleaned");
     return true;
   }
 
@@ -30,7 +34,7 @@ class ReportsHandler {
     final station = stationsMap[stationId]!;
 
     final report = await _createReport(station);
-     return report;
+    return report;
   }
 
   Future<ServerReport?> _createReport(Station station) async {
@@ -40,19 +44,35 @@ class ReportsHandler {
       print("Database not found, report created but not saved with id $id");
       notSavedReport.add(id);
     }
-    reports[id] = ServerReport(station, id);
+    DateTime time = (await db!.updateReport(id, true))!;
+    reports[id] = ServerReport(station, id, time);
     return reports[id];
   }
 
-  Future<ServerReport?> reportUpdate(int reportId, bool stillThere) {
+  Future<ServerReport?> reportUpdate(int reportId, bool stillThere) async {
     if (!reports.containsKey(reportId)) return Future.value(null);
+
     final report = reports[reportId];
-    report!.update(stillThere);
+    if (report == null) return Future.value(null);
+
+    final time = await db?.updateReport(reportId, stillThere);
+    if (time == null) return Future.value(null);
+
+    report.addUpdate(time, stillThere);
+
     return Future.value(report);
   }
 
   Future<List<ServerReport>> getReports() async {
     return Future.value(reports.values.toList());
+  }
+
+  List<ServerReport> cleanReport(DateTime? limit) {
+    final removeId =
+        reports.entries.where((e) => !e.value.keep).map((e) => e.key).toSet();
+    final removed = removeId.map((e) => reports[e]!).toList();
+    reports.removeWhere((k, _) => removeId.contains(k));
+    return removed;
   }
 
   int countReports() {
