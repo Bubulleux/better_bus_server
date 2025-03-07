@@ -23,7 +23,7 @@ Future runRandomClient() async {
 }
 
 void main() async {
-  await server.asyncMain([]);
+  //await server.asyncMain([]);
 
   print("Starting requester ---------------");
   runRandomClient();
