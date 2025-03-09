@@ -10,12 +10,14 @@ class RandomRequester {
   final Duration updateDelay;
   final BusNetwork provider;
   final RadarClient client;
+  bool loop = false;
 
   RandomRequester({
     required this.reportCount,
     this.updateCount = 0,
     this.duration = const Duration(seconds: 10),
     this.updateDelay = const Duration(milliseconds: 500),
+    this.loop = false,
     required this.provider,
     required this.client,
   });
@@ -58,5 +60,9 @@ class RandomRequester {
 
     final report = await client.getReports();
     print("Fetch report count: ${report.length}");
+    if (loop) {
+      print("Loop enable restart");
+      return start();
+    }
   }
 }

@@ -12,9 +12,10 @@ Future runRandomClient() async {
   final client = RadarClient.production(provider: provider);
   print("Client load ${client.stationLoad}");
   final requester = RandomRequester(
-    reportCount: 300,
-    updateCount: 5000,
-    duration: Duration(minutes: 3),
+    reportCount: 5,
+    updateCount: 20,
+    loop: true,
+    duration: Duration(minutes: 1),
     provider: provider,
     client: client,
   );
