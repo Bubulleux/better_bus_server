@@ -9,11 +9,11 @@ Future runRandomClient() async {
   final provider = GTFSProvider.vitalis(ServerPaths());
   await provider.init();
   print("Local provider init");
-  final client = RadarClient.production(provider: provider);
+  final client = RadarClient.localhost(provider: provider);
   print("Client load ${client.stationLoad}");
   final requester = RandomRequester(
-    reportCount: 5,
-    updateCount: 20,
+    reportCount: 150,
+    updateCount: 200,
     loop: true,
     duration: Duration(minutes: 1),
     provider: provider,

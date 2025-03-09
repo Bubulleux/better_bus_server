@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'dart:ffi';
-
 import 'package:better_bus_core/core.dart';
-import 'package:postgres/postgres.dart';
+
 
 class ServerReport extends Report {
   DateTime creationDate = DateTime.now();

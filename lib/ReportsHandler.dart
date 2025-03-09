@@ -1,7 +1,5 @@
 import 'package:better_bus_core/core.dart';
-import 'package:postgres/postgres.dart';
 import 'package:server/DatabaseHandler.dart';
-import 'package:server/models/custom_responses.dart';
 
 import 'models/report.dart';
 
@@ -32,6 +30,14 @@ class ReportsHandler {
   Future<ServerReport?> sendReport(int stationId) async {
     if (!stationsMap.containsKey(stationId)) return null;
     final station = stationsMap[stationId]!;
+    final existingReport = reports.values.where(
+        (e) => e.station == station
+    ).firstOrNull;
+
+    if (existingReport != null) {
+      print("Creating abord it will update");
+      return reportUpdate(existingReport.id, true);
+    }
 
     final report = await _createReport(station);
     return report;
@@ -64,7 +70,14 @@ class ReportsHandler {
   }
 
   Future<List<ServerReport>> getReports() async {
+    await dropOld(Duration(hours: 1));
     return Future.value(reports.values.toList());
+  }
+
+  Future<Set<int>> dropOld(Duration limit) async {
+    Set<int> old = await db!.removeOld(limit);
+    reports.removeWhere((k,_) => old.contains(k));
+    return old;
   }
 
   List<ServerReport> cleanReport(DateTime? limit) {
