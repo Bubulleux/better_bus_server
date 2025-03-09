@@ -9,12 +9,12 @@ Future runRandomClient() async {
   final provider = GTFSProvider.vitalis(ServerPaths());
   await provider.init();
   print("Local provider init");
-  final client = RadarClient.localhost(provider: provider);
+  final client = RadarClient.production(provider: provider);
   print("Client load ${client.stationLoad}");
   final requester = RandomRequester(
     reportCount: 300,
-    updateCount: 2700,
-    duration: Duration(seconds: 20),
+    updateCount: 5000,
+    duration: Duration(minutes: 3),
     provider: provider,
     client: client,
   );
@@ -23,7 +23,7 @@ Future runRandomClient() async {
 }
 
 void main() async {
-  await server.asyncMain([]);
+  // await server.asyncMain([]);
 
   print("Starting requester ---------------");
   runRandomClient();
