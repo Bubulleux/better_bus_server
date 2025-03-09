@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.report_updates
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.report_updates
-    OWNER to postgres;
+    OWNER to bbuser;
 
 
 -- Table: public.reports
@@ -32,4 +32,4 @@ CREATE TABLE IF NOT EXISTS public.reports
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.reports
-    OWNER to postgres;
+    OWNER to bbuser;

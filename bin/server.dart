@@ -14,9 +14,10 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:better_bus_core/core.dart';
 
 final provider = GTFSProvider.vitalis(ServerPaths());
-final db = DBHandler.localhost();
-final reports = ReportsHandler(provider, db);
 
+
+final db = DBHandler.env();
+final reports = ReportsHandler(provider, db);
 // Configure routes.
 final _router = Router()
   ..get('/', _rootHandler)

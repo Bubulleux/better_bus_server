@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:better_bus_core/core.dart';
 import 'package:postgres/postgres.dart';
 import 'package:server/models/report.dart';
@@ -8,7 +10,9 @@ class DBHandler {
 
   Connection get conn => _conn!;
 
-  DBHandler(this.endpoint);
+  DBHandler(this.endpoint) {
+    print("DB CREATE ${endpoint.username} ${endpoint.password} ${endpoint.host}");
+  }
 
   DBHandler.localhost()
       : this(Endpoint(
@@ -17,6 +21,15 @@ class DBHandler {
           database: 'better-bus',
           username: 'localuser',
           password: 'password',
+        ));
+
+  DBHandler.env()
+      : this(Endpoint(
+          host: Platform.environment["DB_HOST"] ?? 'localhost',
+          port: int.tryParse(Platform.environment["DB_PORT"] ?? "") ?? 5432,
+          database: Platform.environment["DB_NAME"] ?? 'better-bus',
+          username: Platform.environment["DB_USER"] ?? 'bbuser',
+          password: Platform.environment["DB_PASSWORD"]!,
         ));
 
   Future<Connection?> connect() async {
@@ -61,7 +74,6 @@ class DBHandler {
       r'ORDER BY time; ',
       parameters: [startDate.millisecondsSinceEpoch / 1000],
     );
-
 
     print(result.schema);
     Map<int, ServerReport> reports = {};
