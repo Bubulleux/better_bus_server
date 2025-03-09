@@ -10,9 +10,7 @@ class DBHandler {
 
   Connection get conn => _conn!;
 
-  DBHandler(this.endpoint) {
-    print("DB CREATE ${endpoint.username} ${endpoint.password} ${endpoint.host}");
-  }
+  DBHandler(this.endpoint);
 
   DBHandler.localhost()
       : this(Endpoint(
