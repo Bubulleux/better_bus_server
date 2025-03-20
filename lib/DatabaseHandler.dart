@@ -80,7 +80,7 @@ class DBHandler {
       {Duration? startFrom = const Duration(hours: 1)}) async {
     await forceConnect();
     final startDate = startFrom != null
-        ? DateTime.now().subtract(startFrom!)
+        ? DateTime.now().subtract(startFrom)
         : DateTime.fromMillisecondsSinceEpoch(0);
     final result = await conn.execute(
       'SELECT report_id, station_id, still_there, '
