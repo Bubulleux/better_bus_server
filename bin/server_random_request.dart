@@ -10,7 +10,6 @@ Future runRandomClient() async {
   await provider.init();
   print("Local provider init");
   final client = RadarClient.production(provider: provider);
-  print("Client load ${client.stationLoad}");
   final requester = RandomRequester(
     reportCount: 250,
     updateCount: 400,
