@@ -1,5 +1,6 @@
 import 'package:better_bus_core/core.dart';
 import 'package:server/DatabaseHandler.dart';
+import 'package:server/analytic.dart';
 
 import 'models/report.dart';
 
@@ -8,11 +9,14 @@ class ReportsHandler {
   Map<int, ServerReport> reports = {};
   Map<int, Station> stationsMap = {};
   Set<int> notSavedReport = {};
+  ApiAnalytic analytic = ApiAnalytic();
   final DBHandler? db;
+
 
   ReportsHandler(this.provider, this.db);
 
   Future<bool> init() async {
+    analytic.startHook();
     var success = await provider.init();
     success &= db == null || await db?.connect() != null;
     if (db == null) print("WARNING: No Database provider !!");
@@ -90,5 +94,10 @@ class ReportsHandler {
 
   int countReports() {
     return reports.length;
+  }
+
+  ApiStatus getStatus() {
+    analytic.gotStatus();
+    return ApiStatus(true, version: "1.1.0");
   }
 }

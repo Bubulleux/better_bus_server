@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:server/DatabaseHandler.dart';
@@ -15,24 +16,18 @@ import 'package:better_bus_core/core.dart';
 
 final provider = GTFSProvider.vitalis(ServerPaths());
 
-
 final db = DBHandler.env();
 final reports = ReportsHandler(provider, db);
 // Configure routes.
 final _router = Router()
-  ..get('/', _rootHandler)
-  ..get('/echo/<message>', _echoHandler)
   ..get('/count', _countReports)
   ..get('/sendReport/<stationId>', _sendReport)
   ..get('/lines.txt', _getLines)
   ..get('/stations', _getStation)
   ..get('/reports', _getReports)
-..get('/update/<reportId>/<stillThere>', _updateReport)
-;
-
-Response _rootHandler(Request req) {
-  return Response.ok('Hello, World!\n');
-}
+  ..get('/update/<reportId>/<stillThere>', _updateReport)
+  ..get('/status', _getStatus)
+  ..get('/analytic', _getAnalytic);
 
 Future<Response> _getLines(Request req) async {
   Map<String, BusLine> lines = await provider.getAllLines();
@@ -47,12 +42,6 @@ Future<Response> _getStation(Request req) async {
 
   return Response.ok(jsonEncode(json),
       headers: {"content-type": "application/json"});
-}
-
-Future<Response> _echoHandler(Request request) async {
-  final message = request.params['message'];
-  await Future.delayed(Duration(seconds: 1));
-  return Response.ok('$message\n');
 }
 
 Response _countReports(Request request) {
@@ -74,13 +63,26 @@ Future<Response> _sendReport(Request request) async {
 
 Future<Response> _updateReport(Request req) async {
   int? reportId = int.tryParse(req.params["reportId"]!);
-  bool? stillThere =  {"1": true, "0": false}[req.params["stillThere"]];
+  bool? stillThere = {"1": true, "0": false}[req.params["stillThere"]];
   if (reportId == null || stillThere == null) {
     return Response.badRequest(body: "Invalid request");
   }
   ServerReport? report = await reports.reportUpdate(reportId, stillThere);
   if (report == null) return Response.badRequest(body: "Report not found");
   return CustomResponses.json(report.toJson());
+}
+
+Future<Response> _getReports(Request req) async {
+  return CustomResponses.reports(await reports.getReports());
+}
+
+Future<Response> _getStatus(Request req) async {
+  final status = reports.getStatus();
+  return CustomResponses.json(status.toJson());
+}
+
+Future<Response> _getAnalytic(Request req) async {
+  return CustomResponses.json(reports.analytic.getAnalytic());
 }
 
 Future<bool> initProvider() async {
@@ -92,12 +94,10 @@ Future<bool> initProvider() async {
   return true;
 }
 
-Future<Response> _getReports(Request req) async {
-  return CustomResponses.reports(await reports.getReports());
-}
 void main(List<String> args) async {
   await asyncMain(args);
 }
+
 Future asyncMain(List<String> args) async {
   await initProvider();
 
@@ -113,4 +113,3 @@ Future asyncMain(List<String> args) async {
   final server = await serve(handler, ip, port);
   print('Server listening on port ${server.port}');
 }
-

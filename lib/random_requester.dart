@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:better_bus_core/core.dart';
+import 'package:shelf_router/shelf_router.dart';
 
 class RandomRequester {
   final int reportCount;
@@ -11,6 +12,7 @@ class RandomRequester {
   final BusNetwork provider;
   final RadarClient client;
   bool loop = false;
+  bool getStatus;
 
   RandomRequester({
     required this.reportCount,
@@ -18,6 +20,7 @@ class RandomRequester {
     this.duration = const Duration(seconds: 10),
     this.updateDelay = const Duration(milliseconds: 500),
     this.loop = false,
+    this.getStatus = false,
     required this.provider,
     required this.client,
   });
@@ -40,6 +43,8 @@ class RandomRequester {
 
       final update = i < updateCount
           ? Future.delayed(wait + updateDelay).then((_) async {
+              if (getStatus) await client.getStatus();
+
               final reports = await client.getReports();
               if (reports.isEmpty) {
                 print("Report can't update");
@@ -62,7 +67,7 @@ class RandomRequester {
     print("Fetch report count: ${report.length}");
     if (loop) {
       print("Loop enable restart");
-      return start();
+      return await start();
     }
   }
 }
